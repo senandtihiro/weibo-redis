@@ -14,6 +14,7 @@ def register_routes(app):
 
 
 def configure_app():
+    app.secret_key = 'secret key'
     register_routes(app)
 
 
