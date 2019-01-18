@@ -19,16 +19,32 @@ def index():
 
 @main.route('/register', methods=['POST'])
 def register():
+    '''
+    user:userid:{}:username
+    user:userid:{}:password
+    :return:
+    '''
     print('register called')
     form = request.form
     print('debug register form', form)
-    r.set('user:name', form.get('username'))
-    r.set('user:password', form.get('password'))
-    r.incr('global:userid')
-    userid = r.get('global:userid')
-    r.set('user:id', userid)
-    session['user_id'] = userid
 
+    # 每注册一个用户，用户的id自增
+    r.incr('global:userid')
+    userid = int(r.get('global:userid'))
+
+    # 重新构建用户名和密码的key
+    username = 'user:userid:{}:username'.format(userid)
+    password = 'user:userid:{}:password'.format(userid)
+
+    input_username = form.get('username')
+    input_password = form.get('password')
+    r.set('user:username:{}:userid'.format(input_username), userid)
+
+    # 设置用户名和密码的value
+    r.set(username, input_username)
+    r.set(password, input_password)
+
+    session['user_id'] = userid
     return redirect(url_for('.index'))
 
 
