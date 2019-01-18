@@ -9,8 +9,8 @@ app = Flask(__name__)
 manager = Manager(app)
 
 def register_routes(app):
-    app.register_blueprint(routes_weibo, url_prefix='/weibo')
-    app.register_blueprint(routes_user)
+    app.register_blueprint(routes_weibo)
+    app.register_blueprint(routes_user, url_prefix='/login')
 
 
 def configure_app():
