@@ -7,6 +7,7 @@ main = Blueprint('weibo', __name__)
 
 
 @main.route('/')
+@login_required
 def index():
     print('weibo index was called')
     # weibo_list = Weibo.query.order_by(Weibo.id.desc()).all()
