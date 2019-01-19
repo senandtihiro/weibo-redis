@@ -6,7 +6,8 @@
 </head>
 <body>
      <form action="{{ url_for('.add') }}" method="post" class="out">
-        <input id="id-input-weibo" type="text" name="weibo" class="wei" placeholder="说说你的新鲜事儿"> </input>
+         <div><span>当前登陆为：{{ username }}</span></div>
+         <input id="id-input-weibo" type="text" name="weibo" class="wei" placeholder="说说你的新鲜事儿"> </input>
         <br>
         <button id="id-button-weibo-add" class="pure-button pure-button-primary sub"
          type="submit">发微博！</button>

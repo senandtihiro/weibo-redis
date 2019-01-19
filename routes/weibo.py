@@ -12,7 +12,8 @@ def index():
     print('weibo index was called')
     # weibo_list = Weibo.query.order_by(Weibo.id.desc()).all()
     weibo_list = []
-    return render_template('weibo_index.html', weibos=weibo_list)
+    username = acquire_username()
+    return render_template('weibo_index.html', weibos=weibo_list, username=username)
 
 
 @main.route('/add', methods=['POST'])
