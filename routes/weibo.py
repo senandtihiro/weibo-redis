@@ -34,6 +34,8 @@ def add():
 @login_required
 def timeline():
     weibo_list = []
-    user_list = []
-    return render_template('timeline.html', weibo_list=weibo_list, user_list=user_list)
+    user_name_list = r.sort('new_user_list', get='user:userid:*:username', by='global:userid')
+    user_name_list = [item.decode('utf8') for item in user_name_list]
+    print('debug user_name_list:', user_name_list)
+    return render_template('timeline.html', weibo_list=weibo_list, user_list=user_name_list)
 
