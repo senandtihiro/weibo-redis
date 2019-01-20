@@ -26,6 +26,18 @@ def register():
     form = request.form
     print('debug register form', form)
 
+    input_username = form.get('username')
+    input_password = form.get('password')
+    print('debug when register, input_username, input_password', input_username, input_password)
+
+    # 用户名唯一性检测
+    key_id = 'user:username:{}:userid'.format(input_username)
+    id_exist = r.get(key_id)
+    print('debug id_exist:', id_exist)
+    if id_exist:
+        print('该用户名已经存在，请重新选择用户名')
+        return render_template('user_register.html')
+
     # 每注册一个用户，用户的id自增
     r.incr('global:userid')
     userid = int(r.get('global:userid'))
@@ -33,10 +45,6 @@ def register():
     # 重新构建用户名和密码的key
     username = 'user:userid:{}:username'.format(userid)
     password = 'user:userid:{}:password'.format(userid)
-
-    input_username = form.get('username')
-    input_password = form.get('password')
-    print('debug when register, userid, input_username, input_password', userid, input_username, input_password)
 
     # 有时还需要根据username来查userid，所以需要另外存一份
     # user:username:hhh:userid: 2
@@ -50,10 +58,11 @@ def register():
     # 通过一个list维护一个50个最新的userid
     r.lpush('new_user_list', userid)
     # 剪切list，从0到最后一个（list是左闭右闭区间）
-    r.ltrim(0, 49)
+    r.ltrim('new_user_list', 0, 49)
 
     print('debug username:', username)
     print('debug password:', password)
+    print('成功注册用户，ID， 用户名，密码：', userid, username, password)
     return redirect(url_for('.index'))
 
 
