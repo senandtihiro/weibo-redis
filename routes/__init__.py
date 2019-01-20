@@ -28,6 +28,7 @@ def login_required(func):
     def wrapper(*args, **kwargs):
         userid = session.get('user_id')
         if not userid:
+            print('in call func:', func.__name__)
             print('没有登陆，不能看到微博界面')
             return render_template('user_login.html')
         print('{}登陆成功，现在可以查看微博界面'.format(userid))

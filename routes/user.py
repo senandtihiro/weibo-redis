@@ -47,6 +47,11 @@ def register():
     r.set(username, input_username)
     r.set(password, input_password)
 
+    # 通过一个list维护一个50个最新的userid
+    r.lpush('new_user_list', userid)
+    # 剪切list，从0到最后一个（list是左闭右闭区间）
+    r.ltrim(0, 49)
+
     print('debug username:', username)
     print('debug password:', password)
     return redirect(url_for('.index'))
@@ -85,3 +90,11 @@ def login():
         print('登录失败')
     # 蓝图中的 url_for 需要加上蓝图的名字，这里是 user
     return redirect(url_for('.index'))
+
+
+
+@main.route('/logout', methods=['GET', 'POST'])
+def logout():
+    print('退出登陆状态')
+    session.pop('user_id')
+    return render_template('user_login.html')

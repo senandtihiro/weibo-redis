@@ -7,7 +7,7 @@ main = Blueprint('weibo', __name__)
 
 
 @main.route('/')
-@login_required
+# @login_required
 def index():
     print('weibo index was called')
     # weibo_list = Weibo.query.order_by(Weibo.id.desc()).all()
@@ -30,4 +30,10 @@ def add():
     return redirect(url_for('.index'))
 
 
+@main.route('/timeline', methods=['GET', 'POST'])
+@login_required
+def timeline():
+    weibo_list = []
+    user_list = []
+    return render_template('timeline.html', weibo_list=weibo_list, user_list=user_list)
 

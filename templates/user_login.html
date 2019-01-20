@@ -10,7 +10,7 @@
       <div class="loginform">
           <h1>已有登陆帐号</h1>
             <ul>
-              <form action="{{ url_for('.login') }}" method="post">
+              <form action="{{ url_for('user.login') }}" method="post">
                 <li class="inputfont"><input type="text" class="input" name="username" placeholder="已注册网站通行证"></li>
                 <li class="inputfont"><input type="password" class="input" name="password" placeholder="密码"></li>
                 <!--<li><a class="reg" href="{{ url_for('user.register') }}">免费注册</a></li>-->
