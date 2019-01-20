@@ -107,3 +107,9 @@ def logout():
     print('退出登陆状态')
     session.pop('user_id')
     return render_template('user_login.html')
+
+
+@main.route('/profile/<string:username>', methods=['GET', 'POST'])
+def profile(username):
+    print('{} 的个人主页'.format(username))
+    return render_template('user_profile.html')

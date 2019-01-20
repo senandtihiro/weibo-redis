@@ -11,7 +11,7 @@
     <div>
         <h2>最近注册用户:</h2>
         {% for user in user_list %}
-        <li>{{ user }}</li>
+        <li><a href="{{ url_for('user.profile', username=user) }}">{{ user }}</a></li>
         {% endfor %}
     </div>
 
