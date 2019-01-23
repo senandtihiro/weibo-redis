@@ -5,6 +5,13 @@
     <title>个人主页</title>
 </head>
 <body>
-    个人主页
+    <h1>个人主页</h1>
+    <div>
+        <h3>我发布的微博</h3>
+        {% for weibo in weibo_list %}
+        <li>{{ weibo.content }}</li>
+        <li>{{ weibo.author }} 创建于 {{ weibo.create_time }}</li>
+        {% endfor %}
+    </div>
 </body>
 </html>

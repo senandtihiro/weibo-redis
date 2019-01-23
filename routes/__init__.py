@@ -1,4 +1,5 @@
 import redis
+import time
 
 from flask import Blueprint
 from flask import render_template
@@ -34,3 +35,11 @@ def login_required(func):
         print('{}登陆成功，现在可以查看微博界面'.format(userid))
         return func(*args, **kwargs)
     return wrapper
+
+
+def format_instant_time():
+    format = '%Y/%m/%d %H:%M:%S'
+    v = int(time.time()) + 3600 * 8
+    valuegmt = time.gmtime(v)
+    dt = time.strftime(format, valuegmt)
+    return dt

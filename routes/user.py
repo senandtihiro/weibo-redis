@@ -101,7 +101,6 @@ def login():
     return redirect(url_for('.index'))
 
 
-
 @main.route('/logout', methods=['GET', 'POST'])
 def logout():
     print('退出登陆状态')
@@ -112,4 +111,6 @@ def logout():
 @main.route('/profile/<string:username>', methods=['GET', 'POST'])
 def profile(username):
     print('{} 的个人主页'.format(username))
-    return render_template('user_profile.html')
+    weibo_list = r.get('weibo')
+    weibo_list = [item.decode('utf8') for item in user_name_list]
+    return render_template('user_profile.html', weibo_list=weibo_list)

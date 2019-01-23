@@ -9,7 +9,6 @@ class Weibo:
         v = int(time.time()) + 3600 * 8
         valuegmt = time.gmtime(v)
         dt = time.strftime(format, valuegmt)
-        self.id = 0
-        self.weibo = form.get('weibo', '')
+        self.content = form.get('content', '')
         self.created_time = dt
 
