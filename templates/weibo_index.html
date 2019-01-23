@@ -6,8 +6,14 @@
 </head>
 <body>
      <form action="{{ url_for('.add') }}" method="post" class="out">
-         <div><span>当前登陆为：{{ username }}</span></div>
-         <input id="id-input-weibo" type="text" name="weibo" class="wei" placeholder="说说你的新鲜事儿"> </input>
+         <div><span>
+             {% if username %}
+             当前登陆为：{{ username }}
+             {% else %}
+                哈喽，游客
+             {% endif %}
+         </span></div>
+         <input id="id-input-weibo" type="text" name="content" class="wei" placeholder="说说你的新鲜事儿"> </input>
         <br>
         <button id="id-button-weibo-add" class="pure-button pure-button-primary sub"
          type="submit">发微博！</button>
@@ -15,8 +21,9 @@
 
     {% for t in weibos %}
     <li>
-        <span class="newWeibo">{{ t.content }}</span>
-        <span class="right span-margin">{{ t.created_time }}</span>
+        <span class="newWeibo">{{ t.get('content', None) }}</span><br>
+        <span class="newWeibo">{{ t.get('author', None) }}</span>创建于
+        <span class="right span-margin">{{ t.get('create_time', None) }}</span>
     </li>
     {% endfor %}
                 <!--<li><a class="reg" href="{{ url_for('user.register') }}">免费注册</a></li>-->

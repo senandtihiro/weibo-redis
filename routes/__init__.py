@@ -10,7 +10,7 @@ from flask import session
 
 from functools import wraps
 
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
 def acquire_username():
@@ -20,19 +20,21 @@ def acquire_username():
     username = r.get(key_username)
     print('debug username:', username)
     if username:
-        return username.decode('utf8')
+        return username
     return username
 
 
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        userid = session.get('user_id')
-        if not userid:
+        username = session.get('username')
+        # username = r.get('user:userid:{}:username:'.format(userid))
+        print('when login, username:', username)
+        if not username:
             print('in call func:', func.__name__)
             print('没有登陆，不能看到微博界面')
             return render_template('user_login.html')
-        print('{}登陆成功，现在可以查看微博界面'.format(userid))
+        print('{}登陆成功，现在可以查看微博界面'.format(username))
         return func(*args, **kwargs)
     return wrapper
 

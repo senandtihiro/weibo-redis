@@ -43,8 +43,8 @@ def register():
     userid = int(r.get('global:userid'))
 
     # 重新构建用户名和密码的key
-    username = 'user:userid:{}:username'.format(userid)
-    password = 'user:userid:{}:password'.format(userid)
+    key_username = 'user:userid:{}:username'.format(userid)
+    key_password = 'user:userid:{}:password'.format(userid)
 
     # 有时还需要根据username来查userid，所以需要另外存一份
     # user:username:hhh:userid: 2
@@ -52,17 +52,18 @@ def register():
     r.set('user:username:{}:userid'.format(input_username), userid)
 
     # 设置用户名和密码的value
-    r.set(username, input_username)
-    r.set(password, input_password)
+    r.set(key_username, input_username)
+    r.set(key_password, input_password)
+
+    username = r.get(key_username)
+    password = r.get(key_password)
+    print('成功注册用户，ID， 用户名，密码：', userid , username, password)
 
     # 通过一个list维护一个50个最新的userid
     r.lpush('new_user_list', userid)
     # 剪切list，从0到最后一个（list是左闭右闭区间）
     r.ltrim('new_user_list', 0, 49)
 
-    print('debug username:', username)
-    print('debug password:', password)
-    print('成功注册用户，ID， 用户名，密码：', userid, username, password)
     return redirect(url_for('.index'))
 
 
@@ -90,11 +91,14 @@ def login():
     key_password = 'user:userid:{}:password'.format(key_userid)
     print('debug key_userid:', key_userid)
     print('debug key_password:', key_password)
-    password_db = r.get(key_password).decode('utf8')
+    password_db = r.get(key_password)
+
+    print('login userid is:', userid)
+    username = r.get('user:userid:{}:username'.format(int(userid)))
     print('debug when login password_db:', password_db)
     if input_password == password_db:
         print('登录成功')
-        session['user_id'] = key_userid
+        session['username'] = username
     else:
         print('登录失败')
     # 蓝图中的 url_for 需要加上蓝图的名字，这里是 user
@@ -104,13 +108,14 @@ def login():
 @main.route('/logout', methods=['GET', 'POST'])
 def logout():
     print('退出登陆状态')
-    session.pop('user_id')
+    session.pop('username')
     return render_template('user_login.html')
 
 
 @main.route('/profile/<string:username>', methods=['GET', 'POST'])
 def profile(username):
     print('{} 的个人主页'.format(username))
-    weibo_list = r.get('weibo')
-    weibo_list = [item.decode('utf8') for item in user_name_list]
+    # weibo_list = r.get('weibo')
+    weibo_list = []
+    # weibo_list = [item.decode('utf8') for item in user_name_list]
     return render_template('user_profile.html', weibo_list=weibo_list)
