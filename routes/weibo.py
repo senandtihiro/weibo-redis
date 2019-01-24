@@ -17,13 +17,19 @@ def index():
 
     # 注意，这里需要取出来所有的微博，所以不能简单地用lpop，应为lpop只能取出来一个元素
     # weibo_list = r.lpop('weibo_list')
+    weibo_list = acquire_weibo_list()
+    username = acquire_username()
+    print('debug username in weibo index page:', username)
+    return render_template('weibo_index.html', weibos=weibo_list, username=username)
+
+
+def acquire_weibo_list():
     weibo_list = r.lrange('weibo_list', 0, -1)
     if weibo_list:
         weibo_list = [json.loads(i) for i in weibo_list]
     else:
         weibo_list = []
-    username = acquire_username()
-    return render_template('weibo_index.html', weibos=weibo_list, username=username)
+    return weibo_list
 
 
 @main.route('/add', methods=['POST'])
@@ -76,7 +82,7 @@ def add():
 @main.route('/timeline', methods=['GET', 'POST'])
 @login_required
 def timeline():
-    weibo_list = []
+    weibo_list = acquire_weibo_list()
     user_name_list = r.sort('new_user_list', get='user:userid:*:username', by='global:userid')
     # user_name_list = [item.decode('utf8') for item in user_name_list]
     print('debug user_name_list:', user_name_list)

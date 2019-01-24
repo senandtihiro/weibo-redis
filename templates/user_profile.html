@@ -7,11 +7,19 @@
 <body>
     <h1>个人主页</h1>
     <div>
-        <h3>我发布的微博</h3>
+        <h3>{{ username }} 发布的微博</h3>
         {% for weibo in weibo_list %}
         <li>{{ weibo.content }}</li>
         <li>{{ weibo.author }} 创建于 {{ weibo.create_time }}</li>
         {% endfor %}
+    </div>
+
+    <div>
+        {% if followed %}
+            <a href="{{ url_for('user.unfollowing', username=username) }}">取消关注</a>
+        {% else %}
+            <a href="{{ url_for('user.following', username=username) }}">关注他</a>
+        {% endif %}
     </div>
 </body>
 </html>

@@ -10,7 +10,7 @@ manager = Manager(app)
 
 def register_routes(app):
     app.register_blueprint(routes_weibo)
-    app.register_blueprint(routes_user, url_prefix='/login')
+    app.register_blueprint(routes_user, url_prefix='/user')
 
 
 def configure_app():

@@ -14,14 +14,17 @@ r = redis.StrictRedis(host='localhost', port=6379, db=0, decode_responses=True)
 
 
 def acquire_username():
-    userid = session.get('user_id')
-    print('debug userid:', userid)
-    key_username = 'user:userid:{}:username'.format(userid)
-    username = r.get(key_username)
-    print('debug username:', username)
-    if username:
-        return username
+    username = session.get('username')
+    print('current username is:', username)
     return username
+
+
+def current_userid():
+    username = acquire_username()
+    key_userid = 'user:username:{}:userid'.format(username)
+    userid = r.get(key_userid)
+    print('current user id:', userid)
+    return userid
 
 
 def login_required(func):

@@ -79,7 +79,6 @@ def login():
     # 方法是根据username去查userid是否存在，如果存在，说明已经注册过了；否则跳转到注册界面
     key_userid = 'user:username:{}:userid'.format(input_username)
     userid = r.get(key_userid)
-    print('debug userid')
     if not userid:
         print('登陆失败，因为还未注册')
         return render_template('user_register.html')
@@ -97,8 +96,9 @@ def login():
     username = r.get('user:userid:{}:username'.format(int(userid)))
     print('debug when login password_db:', password_db)
     if input_password == password_db:
-        print('登录成功')
         session['username'] = username
+        print('{} 登录成功'.format(session['username']))
+
     else:
         print('登录失败')
     # 蓝图中的 url_for 需要加上蓝图的名字，这里是 user
@@ -117,5 +117,58 @@ def profile(username):
     print('{} 的个人主页'.format(username))
     # weibo_list = r.get('weibo')
     weibo_list = []
+    key_following_userid = 'user:username:{}:userid'.format(username)
+    following_userid = r.get(key_following_userid)
+    _already_followed = already_followed(following_userid)
     # weibo_list = [item.decode('utf8') for item in user_name_list]
-    return render_template('user_profile.html', weibo_list=weibo_list)
+    return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=_already_followed)
+
+
+def already_followed(following_userid):
+    '''
+    如果当前登录用户的ID为2，那么他关注的人的集合为
+    following:userid:2
+    :param following_userid: 指的是被关注人的id
+    :return:
+    '''
+    return r.sismember('following:userid:{}'.format(current_userid()), following_userid)
+
+
+@main.route('/following/<string:username>', methods=['GET', 'POST'])
+def following(username):
+    current_username = acquire_username()
+    following = False
+    if current_username == username:
+        print('自己不能关注自己')
+    else:
+        following = already_followed(username)
+        if not following:
+            # 如果还没有关注过这个人，那么现在点击是要关注他
+            # 我关注了这个人，那么这个人应该出现在我的关注人的集合中
+            # 下面计算被关注人的userid
+            key_following_userid = 'user:username:{}:userid'.format(username)
+            following_userid = r.get(key_following_userid)
+            print('被关注人的userid：', following_userid)
+            r.sadd('following:userid:{}'.format(current_userid()), following_userid)
+            print('{} 关注了 {}'.format(current_username, username))
+            _already_followed = True
+
+    weibo_list = []
+    return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=_already_followed)
+
+
+@main.route('/unfollowing/<string:username>', methods=['GET', 'POST'])
+def unfollowing(username):
+    current_username = acquire_username()
+    if current_username == username:
+        print('自己不能取消关注自己')
+    else:
+        key_following_userid = 'user:username:{}:userid'.format(username)
+        following_userid = r.get(key_following_userid)
+        r.srem('following:userid:{}'.format(current_userid()), following_userid)
+        print('{} 取消关注了 {}'.format(current_username, username))
+
+    weibo_list = []
+    return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=False)
+
+
