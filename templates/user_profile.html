@@ -9,8 +9,8 @@
     <div>
         <h3>{{ username }} 发布的微博</h3>
         {% for weibo in weibo_list %}
-        <li>{{ weibo.content }}</li>
-        <li>{{ weibo.author }} 创建于 {{ weibo.create_time }}</li>
+        <li>{{ weibo[2] }}</li>
+        <li>{{ weibo[1] }} 创建于 {{ weibo[0] }}</li>
         {% endfor %}
     </div>
 

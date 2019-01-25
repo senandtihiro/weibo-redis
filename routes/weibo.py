@@ -63,12 +63,23 @@ def add():
         'create_time': create_time,
         'author': author,
         'content': content,
-        'weiboid': weiboid,
     }
-    r.hmset('weibo', weibo_dict)
-    weibo_obj = r.hgetall('weibo')
+
+    # weibo这里不好直接用weibo作为key，将来查询特定id的微博的时候不好查
+    # 这里应该跟user表设计那样，把主键值设置到key中，方便后面查询
+    # 这样一来，value中也就没有必要保存一份weiboid了
+    r.hmset('weibo:weiboid:{}'.format(weiboid), weibo_dict)
+
+    # 发微博的时候还要将这条微博推送给自己的粉丝
+    my_fans = r.smembers('follower:userid:{}'.format(current_userid()))
+
+    weibo_obj = r.hgetall('weibo:weiboid:{}'.format(weiboid))
+
     weibo_obj = json.dumps(weibo_obj)
+    print('debug weibo_obj:', weibo_obj)
+
     r.rpush('weibo_list', weibo_obj)
+    print('debug weibo_list:', r.lrange('weibo_list', 0, -1))
 
     # 保存到数据库中了之后，我们需要传递一个微博对象的列表到html页面中去
     # 这里使用一个namedtuple来表示一个对象，没有必要定义一个类来表示（后面如果方法多了再考虑使用类）
@@ -76,6 +87,21 @@ def add():
     # weibo = Weibo(content=content, author=author, create_time=create_time)
 
     print('用户成功创建了一条微博：', content)
+
+    # 找到了我的粉丝之后，需要将我自己发送的微博发送给我的粉丝们
+    # 下面就又需要为每个人建立一张表，用来保存这个用户接收到的微博的列表
+    # 因为微博虽然很多，但是并不是每条微博都会被每个人看到，
+    # 所以只需要维护一个只有1000条记录的微博，够看就可以了。
+    # 如果微博实在是太多，那么就需要调数据库来存储了，不能全部放在内存中
+    my_fans.add(current_userid())
+    print('debug my_fans:', my_fans)
+    print('debug type my_fans:', type(my_fans))
+
+    for fans_id in my_fans:
+        print('debug fans_id:', fans_id)
+        print('debug weiboid:', weiboid)
+        r.lpush('receive_weibo:{}'.format(fans_id), weiboid)
+
     return redirect(url_for('.index'))
 
 

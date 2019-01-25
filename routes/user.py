@@ -8,7 +8,7 @@ main = Blueprint('user', __name__)
 @main.route('/')
 def index():
     print('login called')
-    userid = session.get('user_id')
+    userid = session.get('username')
     if userid:
         return redirect(url_for('weibo.index'))
     else:
@@ -64,7 +64,8 @@ def register():
     # 剪切list，从0到最后一个（list是左闭右闭区间）
     r.ltrim('new_user_list', 0, 49)
 
-    return redirect(url_for('.index'))
+    return render_template('user_login.html')
+    # return redirect(url_for('.index'))
 
 
 @main.route('/login', methods=['GET', 'POST'])
@@ -98,7 +99,6 @@ def login():
     if input_password == password_db:
         session['username'] = username
         print('{} 登录成功'.format(session['username']))
-
     else:
         print('登录失败')
     # 蓝图中的 url_for 需要加上蓝图的名字，这里是 user
@@ -116,9 +116,23 @@ def logout():
 def profile(username):
     print('{} 的个人主页'.format(username))
     # weibo_list = r.get('weibo')
-    weibo_list = []
     key_following_userid = 'user:username:{}:userid'.format(username)
     following_userid = r.get(key_following_userid)
+    print('debug following_userid:', following_userid)
+
+    # 这里的微博列表需要保存的是自己的微博以及用户所关注的人发送的微博
+    r.ltrim('receive_weibo:{}'.format(following_userid), 0, 49)
+    weiboid_list = r.sort('receive_weibo:{}'.format(following_userid))
+    print('debug in profile page weiboid_list:', weiboid_list)
+
+    # 从列表中取出特定weiboid的微博列表
+    weibo_list = []
+    for weibo_id in weiboid_list:
+        weibo = r.hmget('weibo:weiboid:{}'.format(weibo_id), 'create_time', 'author', 'content')
+        print('debug 取出来的微博：', weibo)
+        weibo_list.append(weibo)
+    print('debug in profile page weibo_list:', weibo_list)
+
     _already_followed = already_followed(following_userid)
     # weibo_list = [item.decode('utf8') for item in user_name_list]
     return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=_already_followed)
@@ -145,20 +159,33 @@ def following(username):
         if not following:
             # 如果还没有关注过这个人，那么现在点击是要关注他
             # 我关注了这个人，那么这个人应该出现在我的关注人的集合中
+            # 同时，我也成为了被关注人的粉丝(follower)
             # 下面计算被关注人的userid
             key_following_userid = 'user:username:{}:userid'.format(username)
             following_userid = r.get(key_following_userid)
             print('被关注人的userid：', following_userid)
             r.sadd('following:userid:{}'.format(current_userid()), following_userid)
+            r.sadd('follower:userid:{}'.format(following_userid), current_userid())
             print('{} 关注了 {}'.format(current_username, username))
-            _already_followed = True
+            following = True
 
     weibo_list = []
-    return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=_already_followed)
+    return render_template('user_profile.html', weibo_list=weibo_list, username=username, followed=following)
 
 
 @main.route('/unfollowing/<string:username>', methods=['GET', 'POST'])
 def unfollowing(username):
+    '''
+    a关注了b
+    那么，a following b
+    同时，a 也是b的follower
+    对a而言：
+    following:userid: a_id                b_id
+    对b而言：
+    follower:userid: b_id                 a_id
+    :param username:
+    :return:
+    '''
     current_username = acquire_username()
     if current_username == username:
         print('自己不能取消关注自己')
@@ -166,6 +193,7 @@ def unfollowing(username):
         key_following_userid = 'user:username:{}:userid'.format(username)
         following_userid = r.get(key_following_userid)
         r.srem('following:userid:{}'.format(current_userid()), following_userid)
+        r.srem('follower:userid:{}'.format(following_userid), current_userid())
         print('{} 取消关注了 {}'.format(current_username, username))
 
     weibo_list = []
